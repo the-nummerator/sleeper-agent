@@ -11,7 +11,7 @@ import apiRoutes from './routes/api';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3939;
 
 app.use(helmet());
 app.use(cors());
@@ -31,6 +31,12 @@ app.use(errorHandler);
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+}).on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+        console.log(`Port ${PORT} is busy`);
+    } else {
+        console.log('Server error:', err);
+    }
 });
 
 process.on('SIGTERM', () => {

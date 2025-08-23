@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import userRoutes from './users';
+import helloWorld from './helloWorld';
+
 
 const router = Router();
 
@@ -15,5 +17,6 @@ router.get('/', (req, res) => {
 });
 
 router.use('/users', userRoutes);
+router.use('/hello-world', helloWorld);
 
 export default router;
