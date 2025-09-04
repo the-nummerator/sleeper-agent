@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 export class HelloWorldController {
 
-  async sayHelloWorld(req: Request, res: Response, next: NextFunction): Promise<void> {
+  sayHelloWorld(req: Request, res: Response, next: NextFunction){
     try {
       res.json({
         success: true,
