@@ -7,7 +7,7 @@ export class UserController {
     { id: '2', name: 'Jane Smith', email: 'jane@example.com' }
   ];
 
-  async getUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  getUsers(req: Request, res: Response, next: NextFunction): void {
     try {
       res.json({
         success: true,
@@ -19,7 +19,7 @@ export class UserController {
     }
   }
 
-  async getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  getUserById(req: Request, res: Response, next: NextFunction): void {
     try {
       const { id } = req.params;
       const user = UserController.users.find(u => u.id === id);
@@ -39,7 +39,7 @@ export class UserController {
     }
   }
 
-  async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  createUser(req: Request, res: Response, next: NextFunction): void {
     try {
       const { name, email } = req.body;
       

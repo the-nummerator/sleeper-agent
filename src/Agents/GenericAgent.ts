@@ -1,7 +1,8 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { BaseAgent, AgentPerception, AgentReasoning, AgentAction, AnthropicConfig } from "./BaseAgent";
 
-export class StockInformationAgent extends BaseAgent {
+export class GenericAgent extends BaseAgent {
+  // TODO REPLACE NON GENERIC
   private systemPrompt = `You are a knowledgeable stock market analyst assistant. Your role is to:
 
       1. Analyze user queries about stocks, market trends, and financial information
@@ -24,6 +25,7 @@ export class StockInformationAgent extends BaseAgent {
   }
 
   protected async reason(perception: AgentPerception): Promise<AgentReasoning> {
+    // TODO REPLACE NON GENERIC
     const reasoningPrompt = `
       Analyze this stock-related query: "${perception.input}"
 
@@ -32,6 +34,7 @@ export class StockInformationAgent extends BaseAgent {
       Please provide:
       1. Analysis of what the user is asking
       2. A plan for how to respond effectively
+      3. Follow up prompts if needed for clarification
 
       Format your response as JSON with these fields: analysis, plan (array of strings), confidence (number)
       `;
@@ -61,21 +64,22 @@ export class StockInformationAgent extends BaseAgent {
   }
 
   protected async act(reasoning: AgentReasoning): Promise<AgentAction> {
+    // TODO REPLACE NON GENERIC
     const actionPrompt = `
-Based on this analysis: ${reasoning.analysis}
+      Based on this analysis: ${reasoning.analysis}
 
-Following this plan: ${reasoning.plan.join("; ")}
+      Following this plan: ${reasoning.plan.join("; ")}
 
-Please provide a comprehensive response about the stock information requested. 
+      Please provide a comprehensive response about the stock information requested. 
 
-Remember to:
-- Be informative and helpful
-- Include relevant financial context
-- Add appropriate disclaimers about financial advice
-- Structure your response clearly
+      Remember to:
+      - Be informative and helpful
+      - Include relevant financial context
+      - Add appropriate disclaimers about financial advice
+      - Structure your response clearly
 
-Provide your response directly (no JSON formatting needed).
-`;
+      Provide your response directly (no JSON formatting needed).
+      `;
 
     const recentMemory = this.getRecentMemory(6);
     const messages = [
@@ -87,7 +91,7 @@ Provide your response directly (no JSON formatting needed).
     const response = await this.llm.invoke(messages);
     
     return {
-      type: "stock_information_response",
+      type: "stock_information_response",  // TODO REPLACE NON GENERIC
       parameters: {
         confidence: reasoning.confidence,
         analysis: reasoning.analysis,
