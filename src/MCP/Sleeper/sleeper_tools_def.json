@@ -1,0 +1,137 @@
+{
+      "tools": [
+        {
+          "name": "get_league",
+          "description": "Get detailed information about a specific league",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              }
+            },
+            "required": ["league_id"]
+          }
+        },
+        {
+          "name": "get_league_rosters",
+          "description": "Get all rosters in a league with player lists and settings",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              }
+            },
+            "required": ["league_id"]
+          }
+        },
+        {
+          "name": "get_league_users",
+          "description": "Get all users in a league with metadata including team names and commissioner status",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              }
+            },
+            "required": ["league_id"]
+          }
+        },
+        {
+          "name": "get_league_matchups",
+          "description": "Get all matchups for a specific week in a league",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              },
+              "week": {
+                "type": "number",
+                "description": "Week number (1-18)",
+                "minimum": 1,
+                "maximum": 18
+              }
+            },
+            "required": ["league_id", "week"]
+          }
+        },
+        {
+          "name": "get_playoff_bracket",
+          "description": "Get playoff bracket (winners or losers) for a league",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              },
+              "bracket_type": {
+                "type": "string",
+                "enum": ["winners", "losers"],
+                "description": "Type of playoff bracket to retrieve"
+              }
+            },
+            "required": ["league_id", "bracket_type"]
+          }
+        },
+        {
+          "name": "get_transactions",
+          "description": "Get all transactions (trades, waivers, free agents) for a specific round/week",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              },
+              "round": {
+                "type": "number",
+                "description": "Round/week number",
+                "minimum": 1
+              }
+            },
+            "required": ["league_id", "round"]
+          }
+        },
+        {
+          "name": "get_traded_picks",
+          "description": "Get all traded draft picks in a league including future picks",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              }
+            },
+            "required": ["league_id"]
+          }
+        },
+        {
+          "name": "get_avatar",
+          "description": "Get avatar image URL for a user or league",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "avatar_id": {
+                "type": "string",
+                "description": "Avatar identifier"
+              },
+              "size": {
+                "type": "string",
+                "enum": ["full", "thumb"],
+                "description": "Avatar size - full or thumbnail"
+              }
+            },
+            "required": ["avatar_id", "size"]
+          }
+        }
+      ]
+}
