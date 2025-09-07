@@ -1,6 +1,23 @@
 {
       "tools": [
         {
+          "name": "get_league_id",
+          "description": "Get the static league ID this server allows you to interact with",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "outputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "The unique league identifier"
+              }
+            }
+          }
+        },
+        {
           "name": "get_league",
           "description": "Get detailed information about a specific league",
           "inputSchema": {
