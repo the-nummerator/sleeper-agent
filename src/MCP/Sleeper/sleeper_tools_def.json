@@ -132,6 +132,78 @@
             },
             "required": ["avatar_id", "size"]
           }
+        },
+        {
+          "name": "get_user_by_id",
+          "description": "Get user information by user ID",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "description": "Unique user identifier"
+              }
+            },
+            "required": ["user_id"]
+          },
+          "outputSchema": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "description": "User's username (can change over time)"
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Unique user identifier (permanent)"
+              },
+              "display_name": {
+                "type": "string",
+                "description": "User's display name"
+              },
+              "avatar": {
+                "type": "string",
+                "nullable": true,
+                "description": "Avatar ID for retrieving user's avatar image"
+              }
+            }
+          }
+        },
+        {
+          "name": "get_user_by_username",
+          "description": "Get user information by username",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "description": "User's username"
+              }
+            },
+            "required": ["username"]
+          },
+          "outputSchema": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "description": "User's username (can change over time)"
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Unique user identifier (permanent)"
+              },
+              "display_name": {
+                "type": "string",
+                "description": "User's display name"
+              },
+              "avatar": {
+                "type": "string",
+                "nullable": true,
+                "description": "Avatar ID for retrieving user's avatar image"
+              }
+            }
+          }
         }
       ]
 }

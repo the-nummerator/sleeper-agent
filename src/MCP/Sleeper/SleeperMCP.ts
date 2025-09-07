@@ -88,6 +88,15 @@ const GetAvatarSchema = z.object({
   size: z.enum(["full", "thumb"]).describe("Avatar size - full or thumbnail"),
 });
 
+// User tool schemas
+const GetUserByIdSchema = z.object({
+  user_id: z.string().describe("Unique user identifier"),
+});
+
+const GetUserByUsernameSchema = z.object({
+  username: z.string().describe("User's username"),
+});
+
 // ============================================================================
 // MCP SERVER CLASS
 // ============================================================================
@@ -266,6 +275,19 @@ class SleeperMCPServer {
                 },
               ],
             };
+          }
+
+                    // User Tools
+          case "get_user_by_id": {
+            const params = GetUserByIdSchema.parse(args);
+            const data = await this.makeApiRequest(`/user/${params.user_id}`);
+            return this.formatResponse(data);
+          }
+
+          case "get_user_by_username": {
+            const params = GetUserByUsernameSchema.parse(args);
+            const data = await this.makeApiRequest(`/user/${params.username}`);
+            return this.formatResponse(data);
           }
 
           default:
