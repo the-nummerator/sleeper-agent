@@ -209,9 +209,8 @@ class SleeperMCPServer {
         switch (name) {
           // League Tools
           case "get_league_id": {
-            const league_id: String = "\"league_id\": \'" + 
-              (process.env.SLEEPER_LEAGUE_ID || 1255621170552655872).toString() + "\"";
-              return this.formatResponse(league_id);
+            const data = { league_id: process.env.SLEEPER_LEAGUE_ID?.toString() || '1255621170552655872' };
+            return this.formatResponse(data);
           }
           
           case "get_league": {

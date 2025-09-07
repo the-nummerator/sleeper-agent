@@ -29,6 +29,72 @@
               }
             },
             "required": ["league_id"]
+          },
+          "outputSchema": {
+            "type": "object",
+            "properties": {
+              "league_id": {
+                "type": "string",
+                "description": "Unique league identifier"
+              },
+              "name": {
+                "type": "string",
+                "description": "League name"
+              },
+              "sport": {
+                "type": "string",
+                "enum": ["nfl"],
+                "description": "Sport type"
+              },
+              "season": {
+                "type": "string",
+                "description": "Season year"
+              },
+              "season_type": {
+                "type": "string",
+                "enum": ["regular", "pre", "post", "off"],
+                "description": "Type of season"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["pre_draft", "drafting", "in_season", "complete"],
+                "description": "Current league status"
+              },
+              "total_rosters": {
+                "type": "integer",
+                "description": "Number of teams in league"
+              },
+              "settings": {
+                "type": "object",
+                "description": "League configuration settings"
+              },
+              "scoring_settings": {
+                "type": "object",
+                "description": "Scoring rules"
+              },
+              "roster_positions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Required roster positions"
+              },
+              "draft_id": {
+                "type": "string",
+                "nullable": true,
+                "description": "Associated draft ID"
+              },
+              "previous_league_id": {
+                "type": "string",
+                "nullable": true,
+                "description": "Previous season league ID"
+              },
+              "avatar": {
+                "type": "string",
+                "nullable": true,
+                "description": "League avatar ID"
+              }
+            }
           }
         },
         {
