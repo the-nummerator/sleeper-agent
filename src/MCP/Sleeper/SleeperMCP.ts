@@ -106,12 +106,13 @@ class SleeperMCPServer {
 
     this.server = new Server(
       {
-        name: "sleeper-fantasy-football",
-        version: "0.01",
+        name: 'sleeper-fantasy-football',
+        version: '0.03',
       },
       {
         capabilities: {
           tools: {},
+          logging: {}
         },
       }
     );
@@ -291,27 +292,18 @@ class SleeperMCPServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.debug("Sleeper MCP server started successfully");
+
+    await this.server.notification({
+      method: 'notifications/message',
+      params: {
+        level: "info",
+        logger: "my-sleeper-fantasy-football'",
+        data: "Server has started successfully"
+      }
+    });
+
+    //console.log(JSON.stringify({ message: 'Sleeper MCP server started successfully' }));
   }
-}
-
-// ============================================================================
-// MAIN ENTRY POINT
-// ============================================================================
-
-async function main() {
-  try {
-    const server = new SleeperMCPServer();
-    await server.start();
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-}
-
-// Run the server if this is the main module
-if (require.main === module) {
-  main();
 }
 
 // ============================================================================

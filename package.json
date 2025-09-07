@@ -1,6 +1,6 @@
 {
   "name": "sleeper-agent",
-  "version": "0.01",
+  "version": "0.03",
   "description": "An abstraction of the Sleeper API into an agent, simple TypeScript backend for automating interactions and a Slack interface",
   "main": "dist/init.js",
   "scripts": {
