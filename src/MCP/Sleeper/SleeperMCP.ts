@@ -27,16 +27,6 @@ import { z } from "zod";
 // Otherwise, use standard import:
 import sleeper_mcp_json_def from "./sleeper_tools_def.json";
 
-// Import all interfaces from ../types.ts
-import type {
-  MCPServer,
-  MCPCapabilities,
-  MCPTool,
-  MCPResource,
-  MCPResourceContent,
-  MCPResult
-} from "../types";
-
 
 // ============================================================================
 // CONFIGURATION
@@ -301,7 +291,7 @@ class SleeperMCPServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("Sleeper MCP server started successfully");
+    console.debug("Sleeper MCP server started successfully");
   }
 }
 
