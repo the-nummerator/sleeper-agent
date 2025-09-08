@@ -64,9 +64,9 @@ Start MCP Server(s)
 const SLEEPER_MCP_PORT = process.env.SLEEPER_MCP_PORT || 3001;
 
 try {
-    const server = new SleeperMCPServer();
-    server.start();
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
+  const server = new SleeperMCPServer();
+  server.start();
+} catch (error) {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+}

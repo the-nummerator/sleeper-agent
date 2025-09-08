@@ -18,15 +18,10 @@ import fetch from "node-fetch";
 import { z } from "zod";
 
 // ============================================================================
-// CUSTOM IMPORTS
+// RESOURCE IMPORTS
 // ============================================================================
 
-// If you update tsconfig.json, use:
-// import sleeper_mcp_json_def from "./sleeper_mcp.json" assert { type: "json" };
-
-// Otherwise, use standard import:
 import sleeper_mcp_json_def from "./sleeper_tools_def.json";
-
 
 // ============================================================================
 // CONFIGURATION
