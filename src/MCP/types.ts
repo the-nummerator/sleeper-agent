@@ -2,6 +2,15 @@
 // TYPE DEFINITIONS
 // ============================================================================
 
+export interface PromptArguments {
+  [key: string]: string | number | boolean;
+}
+
+export interface GeneratedPrompt {
+  description: string;
+  arguments: PromptArguments;
+}
+
 export interface MCPServer {
   name: string;
   version: string;

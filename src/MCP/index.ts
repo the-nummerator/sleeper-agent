@@ -1,7 +1,7 @@
 // ============================================================================
 // IMPORTS
 // ============================================================================
-import { SleeperMCPServer, SleeperApiConfig } from './Sleeper/SleeperMCP';
+import { SleeperMCPServer, SleeperApiConfig } from './Sleeper/sleeper_mcp';
 
 // ============================================================================
 // EXPORTS

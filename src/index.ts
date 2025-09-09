@@ -8,7 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 import apiRoutes from './routes/api';
 
-import { SleeperMCPServer } from './MCP/Sleeper/SleeperMCP';
+import { SleeperMCPServer } from './MCP/Sleeper/sleeper_mcp';
 
 dotenv.config();
 
