@@ -50,3 +50,15 @@ export const GetUserByIdSchema = z.object({
 export const GetUserByUsernameSchema = z.object({
   username: z.string().describe("User's username"),
 });
+
+// Player tool schemas
+export const GetPlayersSchema = z.object({
+  sport: z.enum(["nfl"]).default("nfl").describe("Sport type (currently only nfl supported)"),
+});
+
+export const GetTrendingPlayersSchema = z.object({
+  sport: z.enum(["nfl"]).default("nfl").describe("Sport type (currently only nfl supported)"),
+  type: z.enum(["add", "drop"]).describe("Trend type - either add or drop"),
+  lookback_hours: z.number().min(1).default(24).describe("Number of hours to look back"),
+  limit: z.number().min(1).max(100).default(25).describe("Number of results to return"),
+});

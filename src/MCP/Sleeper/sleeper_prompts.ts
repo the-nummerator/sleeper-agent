@@ -14,22 +14,34 @@ import { PromptArguments, GeneratedPrompt } from "../types";
 const PROMPT_LIST = [
   {
     name: "fantasy_analyzer",
-    description: "Analyze fantasy football data and provide strategic insights, with options: [roster_analysis, matchup_analysis, trade_analysis, season_recap]",
+    description: "Analyze fantasy football data and provide strategic insights",
     arguments: [
       {
         name: "league_id",
         description: "The league ID to analyze",
-        required: true
+        required: true,
+        schema: {
+          type: "string",
+          enum: ['1255621170552655872']
+        }
       },
       {
         name: "analysis_type",
         description: "Type of analysis to perform",
-        required: true
+        required: true,
+        schema: {
+          type: "string",
+          enum: ['roster_analysis', 'matchup_analysis', 'trade_analysis', 'season_recap'],
+        }
       },
       {
         name: "week",
         description: "Week number for weekly analysis",
-        required: false
+        required: false,
+        schema: {
+          type: "integer",
+          enum: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+        }
       }
     ]
   },
@@ -40,12 +52,21 @@ const PROMPT_LIST = [
       {
         name: "league_id",
         description: "The league ID to summarize",
-        required: true
+        required: true,
+        schema: {
+          type: "string",
+          enum: ['1255621170552655872']
+        }
       },
       {
         name: "summary_type",
-        description: "Type of summary to generate, with options: [regular_summary]",
-        required: true
+        description: "Type of summary to generate, with options",
+        required: true,
+        schema: {
+          type: "string",
+          enum: ['regular_summary'],
+        }
+        
       },
     ]
   }

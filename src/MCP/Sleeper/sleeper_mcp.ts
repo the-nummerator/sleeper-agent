@@ -23,7 +23,7 @@ import { z } from "zod";
 // LOCAL IMPORTS
 // ============================================================================
 
-import sleeper_mcp_json_def from "./_sleeper_tools_def.json";
+import sleeper_mcp_json_def from "./resources/sleeper_tools_def.json";
 import {
   GetLeagueSchema,
   GetLeagueRostersSchema,
@@ -35,6 +35,8 @@ import {
   GetAvatarSchema,
   GetUserByIdSchema,
   GetUserByUsernameSchema,
+  GetPlayersSchema,
+  GetTrendingPlayersSchema,
 } from "./tool_validation_schemas";
 import {
   generatePrompt,
@@ -256,6 +258,34 @@ export class SleeperMCPServer {
           case "get_user_by_username": {
             const params = GetUserByUsernameSchema.parse(args);
             const data = await this.makeApiRequest(`/user/${params.username}`);
+            return this.formatResponse(data);
+          }
+
+          // Player Tools
+          case "get_players": {
+            const params = GetPlayersSchema.parse(args);
+            const data = await this.makeApiRequest(`/players/${params.sport}`);
+            return this.formatResponse(data);
+          }
+
+          case "get_trending_players": {
+            const params = GetTrendingPlayersSchema.parse(args);
+            let endpoint = `/players/${params.sport}/trending/${params.type}`;
+            
+            // Add query parameters
+            const queryParams = new URLSearchParams();
+            if (params.lookback_hours !== 24) {
+              queryParams.append('lookback_hours', params.lookback_hours.toString());
+            }
+            if (params.limit !== 25) {
+              queryParams.append('limit', params.limit.toString());
+            }
+            
+            if (queryParams.toString()) {
+              endpoint += `?${queryParams.toString()}`;
+            }
+            
+            const data = await this.makeApiRequest(endpoint);
             return this.formatResponse(data);
           }
 
