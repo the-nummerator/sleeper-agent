@@ -5,7 +5,7 @@
  * It supports creating dynamic prompts for fantasy football analysis and insights.
  */
 
-import { PromptArguments, GeneratedPrompt } from "../types";
+import { McpPromptArguments, McpGeneratedPrompt } from "../types";
 
 // ============================================================================
 // PROMPT DEFINITIONS
@@ -79,7 +79,7 @@ const PROMPT_LIST = [
 /**
  * Generate a prompt for fantasy football analysis
  */
-function generateFantasyAnalyzerPrompt(args: PromptArguments): string {
+function generateFantasyAnalyzerPrompt(args: McpPromptArguments): string {
   const { league_id, analysis_type, week } = args;
   
   let basePrompt = `You are a fantasy football expert analyzing Sleeper league data for league ${league_id}. 
@@ -149,7 +149,7 @@ function generateFantasyAnalyzerPrompt(args: PromptArguments): string {
 /**
  * Generate a prompt for fantasy football analysis
  */
-function generateTuesdaySummaryPrompt(args: PromptArguments): string {
+function generateTuesdaySummaryPrompt(args: McpPromptArguments): string {
   const { league_id, summary_type, week } = args;
   
   let basePrompt = `You are a fantasy football expert analyzing Sleeper league data for league ${league_id}. 
@@ -163,10 +163,10 @@ function generateTuesdaySummaryPrompt(args: PromptArguments): string {
         1. Brief written account of four teams: King of the Week (the team with the highest score), 
             the Weekly Lamb (the team with the lowest score), the Biggest Blowout (the match with 
             the largest margin of victory), and the Close but No Cigar (the losing team of the match 
-            with the lowest margin of victory). Annotate these with comical burns and 
+            with the lowest margin of victory). Annotate these with burns and 
             jabs at the teams involved.
 
-        2. A summary of all matchups and outcomes. Include a table of each match - one row per match. 
+        2. A summary of all matchups and their outcomes. Include a table of each match - one row per match. 
             For each match include a column for each team, each team's respective score, the winner marked 
             with a football emoji, the margin of victory and a one sentence summary of the matchup.
 
@@ -202,7 +202,7 @@ function generateTuesdaySummaryPrompt(args: PromptArguments): string {
  * @param args The arguments for prompt generation
  * @returns The generated prompt string
  */
-export function generatePrompt(promptName: string, args: PromptArguments = {}): string {
+export function generatePrompt(promptName: string, args: McpPromptArguments = {}): string {
   switch (promptName) {
     case "fantasy_analyzer":
       return generateFantasyAnalyzerPrompt(args);

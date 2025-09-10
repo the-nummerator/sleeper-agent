@@ -13,6 +13,8 @@ import {
   ListToolsRequestSchema,
   ListPromptsRequestSchema,
   GetPromptRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -23,7 +25,7 @@ import { z } from "zod";
 // LOCAL IMPORTS
 // ============================================================================
 
-import sleeper_mcp_json_def from "./resources/sleeper_tools_def.json";
+import sleeper_mcp_json_def from "./files/sleeper_tools_def.json";
 import {
   GetLeagueSchema,
   GetLeagueRostersSchema,
@@ -43,7 +45,12 @@ import {
   getAvailablePrompts,
   getPromptDefinition,
 } from "./sleeper_prompts";
-import { PromptArguments } from "../types";
+import {
+  getAvailableResources,
+  readResource,
+  getResourceDefinition,
+} from "./sleeper_resources";
+import { McpPromptArguments } from "../types";
 
 // ============================================================================
 // CONFIGURATION
@@ -87,6 +94,7 @@ export class SleeperMCPServer {
         capabilities: {
           tools: {},
           prompts: {},
+          resources: {},
           logging: {}
         },
       }
@@ -346,7 +354,7 @@ export class SleeperMCPServer {
           }
         }
 
-        const generatedPrompt = generatePrompt(name, args as PromptArguments);
+        const generatedPrompt = generatePrompt(name, args as McpPromptArguments);
         
         return {
           description: promptDefinition.description,
@@ -367,6 +375,35 @@ export class SleeperMCPServer {
         throw new McpError(
           ErrorCode.InternalError,
           `Failed to generate prompt: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    });
+
+    // Handle resource listing
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      const availableResources = getAvailableResources();
+      return {
+        resources: availableResources
+      };
+    });
+
+    // Handle resource reading
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const { uri } = request.params;
+      
+      try {
+        const resourceContent = readResource(uri);
+        
+        return {
+          contents: [resourceContent]
+        };
+      } catch (error) {
+        if (error instanceof McpError) {
+          throw error;
+        }
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to read resource: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     });

@@ -1,6 +1,6 @@
 {
   "name": "sleeper-agent",
-  "version": "0.10.04",
+  "version": "0.11.02",
   "description": "An abstraction of the Sleeper API into an agent, simple TypeScript backend for automating interactions and a Slack interface",
   "main": "dist/init.js",
   "scripts": {
@@ -10,6 +10,15 @@
     "lint": "eslint src/**/*.ts",
     "test": "jest"
   },
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "src/**/*"
+  ],
   "keywords": [
     "nodejs",
     "typescript",
