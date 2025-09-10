@@ -10,9 +10,6 @@ import * as path from "path";
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 import {McpResourceDefinition, McpResourceContent} from "../types";
 
-import sleeper_player_def from "./files/sleeper_players_def.json";
-
-
 // ============================================================================
 // RESOURCE DEFINITIONS
 // ============================================================================

@@ -153,17 +153,17 @@ function generateTuesdaySummaryPrompt(args: McpPromptArguments): string {
   const { league_id, summary_type, week } = args;
   
   let basePrompt = `You are a fantasy football expert analyzing Sleeper league data for league ${league_id}. 
-                    You are also a sports writer with a comical lean to roast players and teams.`;
+                    You are also a sports writer with a comical lean to roast players and teams.
+                    Before you generate any text, calculate the margin of victory between all matches.`;
   
   switch (summary_type) {
     case "regular_summary":
       return `${basePrompt}
 
         Please provide a summary of the previous week's games including:
-        1. Brief written account of four teams: King of the Week (the team with the highest score), 
-            the Weekly Lamb (the team with the lowest score), the Biggest Blowout (the match with 
-            the largest margin of victory), and the Close but No Cigar (the losing team of the match 
-            with the lowest margin of victory). Annotate these with burns and 
+        1. Brief written account of three teams: King of the Week (the team with the highest score), 
+            the Weekly Lamb (the team with the lowest score) and the Close but No Cigar 
+            (the losing team of the match with the lowest margin of victory). Annotate these with burns and 
             jabs at the teams involved.
 
         2. A summary of all matchups and their outcomes. Include a table of each match - one row per match. 
