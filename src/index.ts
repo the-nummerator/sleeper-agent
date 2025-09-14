@@ -16,8 +16,8 @@ dotenv.config();
 Start the Route
 ********/
 
-/*  Temporary removal to enable Claude to connet to my local MCP servers
-
+//UNDO Temporary removal to enable Claude to connet to my local MCP servers
+/*
 const app = express();
 const ROUTER_PORT = process.env.ROUTER_PORT || 3000;
 
@@ -38,7 +38,7 @@ app.use(errorHandler);
 
 const server = app.listen(ROUTER_PORT, () => {
   console.log(`🚀 Server running on port ${ROUTER_PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 Health check: http://localhost:${ROUTER_PORT}/health`);
 }).on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
         console.log(`Port ${ROUTER_PORT} is busy`);
@@ -61,7 +61,8 @@ export default app;
 /*******
 Start MCP Server(s)
 ********/
-const SLEEPER_MCP_PORT = process.env.SLEEPER_MCP_PORT || 3001;
+
+//const SLEEPER_MCP_PORT = process.env.SLEEPER_MCP_PORT || 3001; // not using HTTP
 
 try {
     const server = new SleeperMCPServer();
