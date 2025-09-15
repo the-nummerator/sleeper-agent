@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 export class HelloWorldController {
 
   sayHelloWorld(req: Request, res: Response, next: NextFunction){
+    
+    console.log("Saying hello world");
     try {
       res.json({
         success: true,

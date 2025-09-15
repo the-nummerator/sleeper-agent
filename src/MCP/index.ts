@@ -1,10 +1,11 @@
 // ============================================================================
 // IMPORTS
 // ============================================================================
-import { SleeperMCPServer, SleeperApiConfig } from './Sleeper/sleeper_mcp';
+import { SleeperMCPServer } from './Sleeper/sleeper_mcp';
+import { isMcpStartedByClaude } from './mcp_tools';
 
 // ============================================================================
 // EXPORTS
 // ============================================================================
 
-export { SleeperMCPServer, SleeperApiConfig as SleeperConfig };
+export { SleeperMCPServer, isMcpStartedByClaude };

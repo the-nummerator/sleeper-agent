@@ -7,6 +7,7 @@
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
@@ -20,6 +21,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import fetch from "node-fetch";
 import { z } from "zod";
+import { IncomingMessage, ServerResponse } from "node:http";
+import { randomUUID } from "node:crypto";
 
 // ============================================================================
 // LOCAL IMPORTS
@@ -77,6 +80,7 @@ export class SleeperMCPServer {
   private server: Server;
   private config: SleeperApiConfig;
   private lastRequestTime: number = 0;
+  private transport?: StreamableHTTPServerTransport;
 
   constructor(config?: Partial<SleeperApiConfig>) {
     this.config = {
@@ -410,9 +414,48 @@ export class SleeperMCPServer {
   }
 
   /**
-   * Start the MCP server
+   * Initialize the MCP server (without starting HTTP transport)
    */
-  async start(): Promise<void> {
+  async initialize(port: string): Promise<void> {
+    // Create transport but don't start it yet - it will be started when handling HTTP requests
+    this.transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+      onsessioninitialized: (sessionId) => {
+        console.log(`MCP session initialized: ${sessionId}`);
+      },
+      onsessionclosed: (sessionId) => {
+        console.log(`MCP session closed: ${sessionId}`);
+      },
+      enableJsonResponse: false, // Use SSE for streaming
+      allowedHosts: ['localhost', '127.0.0.1'],
+      allowedOrigins: ['http://localhost:' + port, 'http://127.0.0.1:' + port],
+      enableDnsRebindingProtection: false
+    });
+
+    await this.server.connect(this.transport);
+    console.log("Sleeper MCP server initialized with HTTP transport");
+  }
+
+  /**
+   * Handle HTTP requests for MCP communication
+   */
+  async handleRequest(req: IncomingMessage, res: ServerResponse, parsedBody?: unknown): Promise<void> {
+    if (!this.transport) {
+      throw new Error("MCP server not initialized. Call initialize() first.");
+    }
+    
+    await this.transport.handleRequest(req, res, parsedBody);
+  }
+
+  /**
+   * Get the transport instance (for direct access if needed)
+   */
+  getTransport(): StreamableHTTPServerTransport | undefined {
+    return this.transport;
+  }
+
+  /* In case you want to use stdio instead of HTTP */
+  async startStdio(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
@@ -424,7 +467,18 @@ export class SleeperMCPServer {
         data: "Server has started successfully"
       }
     });
-
-    //console.log(JSON.stringify({ message: 'Sleeper MCP server started successfully' }));
   }
+
+  /****
+   * Example claude_desktop_config.json entry to run this MCP server
+   *
+      {
+        "mcpServers": {
+          "sleeper-agent": {
+            "command": "node",
+            "args": ["/Users/peternummerdor/dev/repos/sleeper-agent/dist/index.js"]
+          }
+        }
+      }
+    ****/
 }
