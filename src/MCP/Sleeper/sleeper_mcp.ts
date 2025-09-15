@@ -26,6 +26,7 @@ import { z } from "zod";
 // ============================================================================
 
 import sleeper_mcp_json_def from "./files/sleeper_tools_def.json";
+import { FilteredStdioTransport } from "../FilteredStdioTransport.js";
 import {
   GetLeagueSchema,
   GetLeagueRostersSchema,
@@ -413,7 +414,8 @@ export class SleeperMCPServer {
    * Start the MCP server
    */
   async start(): Promise<void> {
-    const transport = new StdioServerTransport();
+    const transport = new FilteredStdioTransport();
+    //const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
     await this.server.notification({

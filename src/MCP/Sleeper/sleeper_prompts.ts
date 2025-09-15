@@ -159,7 +159,8 @@ function generateTuesdaySummaryPrompt(args: McpPromptArguments): string {
     case "regular_summary":
       return `${basePrompt}
 
-        Please provide a summary of the previous week's games including:
+        Calculate the margins of victories for all matches before you answer. Please provide a summary 
+        of the previous week's games including:
         1. Brief written account of four teams: King of the Week (the team with the highest score), 
             the Weekly Lamb (the team with the lowest score), the Biggest Blowout (the match with 
             the largest margin of victory), and the Close but No Cigar (the losing team of the match 

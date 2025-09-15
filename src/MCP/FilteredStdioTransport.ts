@@ -1,163 +1,180 @@
-import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { JSONRPCMessage, JSONRPCRequest, JSONRPCResponse } from "@modelcontextprotocol/sdk/types.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { Readable, Writable } from "stream";
 import * as readline from "readline";
 
 /**
  * Custom Stdio Transport that filters non-JSON-RPC messages
- * Allows console.log and other output while maintaining MCP communication
+ * Extends StdioServerTransport and filters stdin to ignore non-JSON RPC messages
+ * Allows console.log and other output while maintaining clean MCP communication
  */
-class FilteredStdioTransport implements Transport {
+export class FilteredStdioTransport extends StdioServerTransport {
   private _reader: readline.Interface;
   private _writer: Writable;
-  private _messageHandlers = new Set<(message: JSONRPCMessage) => void>();
-  private _closeHandlers = new Set<() => void>();
-  private _errorHandlers = new Set<(error: Error) => void>();
-  private _started = false;
+  private _originalOnMessage: ((message: JSONRPCMessage) => void)  | undefined;
+  private _filtered_started = false;
 
   constructor(
     private input: Readable = process.stdin,
     private output: Writable = process.stdout
   ) {
-    this._writer = this.output;
+    // Pass input and output to parent StdioServerTransport
+    super(input, output);
     
-    // Create readline interface for line-by-line processing
+    this._writer = output;
     this._reader = readline.createInterface({
-      input: this.input,
+      input,
+      output: undefined, // Don't echo to stdout
+      crlfDelay: Infinity
     });
-
-    this.setupInputHandling();
   }
 
-  private setupInputHandling(): void {
-    this._reader.on('line', (line: string) => {
-      // Skip empty lines
-      if (!line.trim()) {
-        return;
-      }
+  /**
+   * Override start to implement custom filtering
+   */
+  override async start(): Promise<void> {
+    if (this._filtered_started) {
+      throw new Error("Transport already started");
+    }
 
-      // Try to parse as JSON-RPC
+    console.error("Starting FilteredStdioTransport");
+
+    // Store original onmessage handler
+    this._originalOnMessage = this.onmessage;
+
+    // Set up our filtered message handling
+    this._reader.on('line', (line: string) => {
       try {
-        const parsed = JSON.parse(line);
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return; // Ignore empty lines
+        }
+
+        console.error("Read line:", trimmed);
+
+        const obj = JSON.parse(trimmed);
         
-        // Check if it's a valid JSON-RPC message
-        if (this.isValidJSONRPC(parsed)) {
-          // Forward to MCP handlers
-          for (const handler of this._messageHandlers) {
-            handler(parsed);
+        if (this.isValidJSONRPC(obj) && this.isValidMCPMessage(obj)) {
+          console.error("Is valid JSON-RPC and MCP message, forwarding");
+          if (this._originalOnMessage) {
+            try {
+              this._originalOnMessage(obj);
+            } catch (error) {
+              console.error("Error in message handler:", error);
+              if (this.onerror) {
+                this.onerror(error as Error);
+              }
+            }
           }
         } else {
-          // Not a JSON-RPC message - log to stderr and ignore
-          process.stderr.write(`[MCP] Ignoring non-JSON-RPC input: ${line.substring(0, 100)}...\n`);
+          console.error("Not a valid JSON-RPC/MCP message, ignoring");
         }
       } catch (error) {
-        // Not valid JSON - log to stderr and ignore
-        process.stderr.write(`[MCP] Ignoring non-JSON input: ${line.substring(0, 100)}...\n`);
+        // Not valid JSON, ignore non-JSON lines
+        console.error("Not valid JSON, ignoring:", line);
       }
     });
 
     this._reader.on('close', () => {
-      for (const handler of this._closeHandlers) {
-        handler();
+      console.error("Reader closed");
+      if (this.onclose) {
+        this.onclose();
       }
     });
 
     this._reader.on('error', (error: Error) => {
-      for (const handler of this._errorHandlers) {
-        handler(error);
+      console.error("Reader error:", error);
+      if (this.onerror) {
+        this.onerror(error);
       }
     });
+
+    this._filtered_started = true;
   }
 
+  /**
+   * Validate JSON-RPC message structure
+   */
   private isValidJSONRPC(obj: any): obj is JSONRPCMessage {
     if (!obj || typeof obj !== 'object') {
       return false;
     }
 
+    console.error("Validating JSON-RPC of:", obj);
+
     // Must have jsonrpc field
-    if (obj.jsonrpc !== '2.0') {
+    return (obj.jsonrpc == '2.0');
+  }
+
+  /**
+   * Validate MCP-specific message requirements
+   */
+  private isValidMCPMessage(obj: any): boolean {
+    if (!obj || typeof obj !== 'object') {
       return false;
     }
 
-    /* This feels limiting - idk, commenting out for now
+    // If it's a request/notification, validate method names
+    if (obj.method) {
+      const validMethods = [
+        // Standard MCP methods
+        'initialize',
+        'notifications/initialized',
+        'ping',
+        'tools/list',
+        'tools/call',
+        'resources/list',
+        'resources/read',
+        'prompts/list',
+        'prompts/get',
+        'completion/complete',
+        'roots/list',
+        'sampling/createMessage',
+        'logging/setLevel',
+        // Notification methods
+        'notifications/message',
+        'notifications/progress',
+        'notifications/cancelled',
+        'notifications/roots/list_changed',
+        'notifications/resources/list_changed',
+        'notifications/resources/updated',
+        'notifications/tools/list_changed',
+        'notifications/prompts/list_changed'
+      ];
 
-
-    // Must be either a request, response, or notification
-    const hasMethod = typeof obj.method === 'string';
-    const hasId = obj.id !== undefined;
-    const hasResult = obj.result !== undefined;
-    const hasError = obj.error !== undefined;
-
-    // Request: has method and id
-    // Notification: has method but no id
-    // Response: has id and (result or error)
-    return (
-      (hasMethod && hasId) ||      // Request
-      (hasMethod && !hasId) ||     // Notification
-      (hasId && (hasResult || hasError)) // Response
-    );
-
-    */
-
-    else { return true }
-  }
-
-  onMessage(handler: (message: JSONRPCMessage) => void): void {
-    this._messageHandlers.add(handler);
-  }
-
-  onClose(handler: () => void): void {
-    this._closeHandlers.add(handler);
-  }
-
-  onError(handler: (error: Error) => void): void {
-    this._errorHandlers.add(handler);
-  }
-
-  async send(message: JSONRPCMessage): Promise<void> {
-    if (!this._started) {
-      throw new Error("Transport not started");
+      if (!validMethods.includes(obj.method)) {
+        console.error("Invalid MCP method:", obj.method);
+        return false;
+      }
     }
 
-    const serialized = JSON.stringify(message) + '\n';
-    
-    return new Promise((resolve, reject) => {
-      this._writer.write(serialized, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
+    // If it's a response, validate it has appropriate structure
+    if (obj.id !== undefined && !obj.method) {
+      // Should have either result or error
+      if (obj.result === undefined && obj.error === undefined) {
+        console.error("Response missing result or error");
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  async start(): Promise<void> {
-    if (this._started) {
+  /**
+   * Override close to clean up our resources
+   */
+  override async close(): Promise<void> {
+    if (!this._filtered_started) {
       return;
     }
 
-    // Create readline interface for line-by-line processing
-    this._reader = readline.createInterface({
-      input: this.input
-    });
-
-    this.setupInputHandling();
-    this._started = true;
-  }
-
-  async close(): Promise<void> {
-    if (!this._started) {
-      return;
-    }
+    console.error("Closing FilteredStdioTransport");
 
     this._reader?.close();
     
-    // Don't close stdout/stderr as other parts of the app might need them
-    if (this._writer !== process.stdout && this._writer !== process.stderr) {
-      this._writer.end();
-    }
+    // Call parent close
+    await super.close();
 
-    this._started = false;
+    this._filtered_started = false;
   }
 }
