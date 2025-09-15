@@ -2,6 +2,28 @@
 // TYPE DEFINITIONS
 // ============================================================================
 
+export interface McpPromptArguments {
+  [key: string]: string | number | boolean;
+}
+
+export interface McpGeneratedPrompt {
+  description: string;
+  arguments: McpPromptArguments;
+}
+
+export interface McpResourceDefinition {
+  uri: string;
+  name: string;
+  description: string;
+  mimeType: string;
+}
+
+export interface McpResourceContent {
+  uri: string;
+  mimeType: string;
+  text: string;
+}
+
 export interface MCPServer {
   name: string;
   version: string;

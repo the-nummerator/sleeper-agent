@@ -8,7 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 import apiRoutes from './routes/api';
 
-import { SleeperMCPServer } from './MCP/Sleeper/SleeperMCP';
+import { SleeperMCPServer } from './MCP/Sleeper/sleeper_mcp';
 
 dotenv.config();
 
@@ -65,9 +65,9 @@ Start MCP Server(s)
 //const SLEEPER_MCP_PORT = process.env.SLEEPER_MCP_PORT || 3001; // not using HTTP
 
 try {
-    const server = new SleeperMCPServer();
-    server.start();
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
+  const server = new SleeperMCPServer();
+  server.start();
+} catch (error) {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+}

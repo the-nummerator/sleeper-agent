@@ -1,7 +1,7 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { BaseAgent, AgentPerception, AgentReasoning, AgentAction, AnthropicConfig } from "./BaseAgent";
 
-export class GenericAgent extends BaseAgent {
+export class SleeperAgent extends BaseAgent {
   // TODO REPLACE NON GENERIC
   private systemPrompt = `You are a knowledgeable stock market analyst assistant. Your role is to:
 

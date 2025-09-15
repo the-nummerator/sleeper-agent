@@ -11,6 +11,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -18,15 +22,35 @@ import fetch from "node-fetch";
 import { z } from "zod";
 
 // ============================================================================
-// CUSTOM IMPORTS
+// LOCAL IMPORTS
 // ============================================================================
 
-// If you update tsconfig.json, use:
-// import sleeper_mcp_json_def from "./sleeper_mcp.json" assert { type: "json" };
-
-// Otherwise, use standard import:
-import sleeper_mcp_json_def from "./sleeper_tools_def.json";
-
+import sleeper_mcp_json_def from "./files/sleeper_tools_def.json";
+import {
+  GetLeagueSchema,
+  GetLeagueRostersSchema,
+  GetLeagueUsersSchema,
+  GetLeagueMatchupsSchema,
+  GetPlayoffBracketSchema,
+  GetTransactionsSchema,
+  GetTradedPicksSchema,
+  GetAvatarSchema,
+  GetUserByIdSchema,
+  GetUserByUsernameSchema,
+  GetPlayersSchema,
+  GetTrendingPlayersSchema,
+} from "./tool_validation_schemas";
+import {
+  generatePrompt,
+  getAvailablePrompts,
+  getPromptDefinition,
+} from "./sleeper_prompts";
+import {
+  getAvailableResources,
+  readResource,
+  getResourceDefinition,
+} from "./sleeper_resources";
+import { McpPromptArguments } from "../types";
 
 // ============================================================================
 // CONFIGURATION
@@ -40,68 +64,16 @@ const RATE_LIMIT_DELAY = 120; // Delay between requests in ms to stay under rate
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface SleeperApiConfig {
+export interface SleeperApiConfig {
   apiBaseUrl: string;
   cdnBaseUrl: string;
   rateLimitDelay: number;
 }
-
-// ============================================================================
-// VALIDATION SCHEMAS
-// ============================================================================
-
-// League tool schemas
-const GetLeagueSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-});
-
-const GetLeagueRostersSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-});
-
-const GetLeagueUsersSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-});
-
-const GetLeagueMatchupsSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-  week: z.number().min(1).max(18).describe("Week number (1-18)"),
-});
-
-const GetPlayoffBracketSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-  bracket_type: z.enum(["winners", "losers"]).describe("Type of playoff bracket"),
-});
-
-const GetTransactionsSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-  round: z.number().min(1).describe("Round/week number"),
-});
-
-const GetTradedPicksSchema = z.object({
-  league_id: z.string().describe("The unique league identifier"),
-});
-
-// Avatar tool schemas
-const GetAvatarSchema = z.object({
-  avatar_id: z.string().describe("Avatar identifier"),
-  size: z.enum(["full", "thumb"]).describe("Avatar size - full or thumbnail"),
-});
-
-// User tool schemas
-const GetUserByIdSchema = z.object({
-  user_id: z.string().describe("Unique user identifier"),
-});
-
-const GetUserByUsernameSchema = z.object({
-  username: z.string().describe("User's username"),
-});
-
 // ============================================================================
 // MCP SERVER CLASS
 // ============================================================================
 
-class SleeperMCPServer {
+export class SleeperMCPServer {
   private server: Server;
   private config: SleeperApiConfig;
   private lastRequestTime: number = 0;
@@ -116,11 +88,13 @@ class SleeperMCPServer {
     this.server = new Server(
       {
         name: 'sleeper-fantasy-football',
-        version: '0.03',
+        version: '0.04',
       },
       {
         capabilities: {
           tools: {},
+          prompts: {},
+          resources: {},
           logging: {}
         },
       }
@@ -295,6 +269,34 @@ class SleeperMCPServer {
             return this.formatResponse(data);
           }
 
+          // Player Tools
+          case "get_players": {
+            const params = GetPlayersSchema.parse(args);
+            const data = await this.makeApiRequest(`/players/${params.sport}`);
+            return this.formatResponse(data);
+          }
+
+          case "get_trending_players": {
+            const params = GetTrendingPlayersSchema.parse(args);
+            let endpoint = `/players/${params.sport}/trending/${params.type}`;
+            
+            // Add query parameters
+            const queryParams = new URLSearchParams();
+            if (params.lookback_hours !== 24) {
+              queryParams.append('lookback_hours', params.lookback_hours.toString());
+            }
+            if (params.limit !== 25) {
+              queryParams.append('limit', params.limit.toString());
+            }
+            
+            if (queryParams.toString()) {
+              endpoint += `?${queryParams.toString()}`;
+            }
+            
+            const data = await this.makeApiRequest(endpoint);
+            return this.formatResponse(data);
+          }
+
           default:
             throw new McpError(
               ErrorCode.MethodNotFound,
@@ -309,6 +311,100 @@ class SleeperMCPServer {
           );
         }
         throw error;
+      }
+    });
+
+    // Handle prompt listing
+    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+      const availablePrompts = getAvailablePrompts();
+      return {
+        prompts: availablePrompts.map(prompt => ({
+          name: prompt.name,
+          description: prompt.description,
+          arguments: prompt.arguments.map(arg => ({
+            name: arg.name,
+            description: arg.description,
+            required: arg.required
+          }))
+        }))
+      };
+    });
+
+    // Handle prompt generation
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
+      
+      try {
+        const promptDefinition = getPromptDefinition(name);
+        if (!promptDefinition) {
+          throw new McpError(
+            ErrorCode.MethodNotFound,
+            `Unknown prompt: ${name}`
+          );
+        }
+
+        // Validate required arguments
+        const requiredArgs = promptDefinition.arguments.filter(arg => arg.required);
+        for (const requiredArg of requiredArgs) {
+          if (!args || !(requiredArg.name in args)) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              `Missing required argument: ${requiredArg.name}`
+            );
+          }
+        }
+
+        const generatedPrompt = generatePrompt(name, args as McpPromptArguments);
+        
+        return {
+          description: promptDefinition.description,
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: generatedPrompt
+              }
+            }
+          ]
+        };
+      } catch (error) {
+        if (error instanceof McpError) {
+          throw error;
+        }
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to generate prompt: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    });
+
+    // Handle resource listing
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      const availableResources = getAvailableResources();
+      return {
+        resources: availableResources
+      };
+    });
+
+    // Handle resource reading
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const { uri } = request.params;
+      
+      try {
+        const resourceContent = readResource(uri);
+        
+        return {
+          contents: [resourceContent]
+        };
+      } catch (error) {
+        if (error instanceof McpError) {
+          throw error;
+        }
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to read resource: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     });
   }
