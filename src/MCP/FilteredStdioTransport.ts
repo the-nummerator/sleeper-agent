@@ -103,7 +103,7 @@ export class FilteredStdioTransport extends StdioServerTransport {
     console.error("Validating JSON-RPC of:", obj);
 
     // Must have jsonrpc field
-    return (obj.jsonrpc == '2.0');
+    return (obj.jsonrpc === '2.0');
   }
 
   /**
