@@ -280,52 +280,16 @@
       }
     },
     {
-      "name": "get_players",
-      "description": "Get all players for NFL sport (WARNING: Returns ~5MB of data, should only be called once per day maximum)",
+      "name": "get_player",
+      "description": "Get a single player data for by player ID",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "sport": {
+          "player_id": {
             "type": "string",
-            "enum": ["nfl"],
-            "description": "Sport type (currently only nfl supported)",
-            "default": "nfl"
+            "description": "Unique identifier for the player"
           }
         }
-      }
-    },
-    {
-      "name": "get_trending_players",
-      "description": "Get trending players based on add/drop activity",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "sport": {
-            "type": "string",
-            "enum": ["nfl"],
-            "description": "Sport type (currently only nfl supported)",
-            "default": "nfl"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["add", "drop"],
-            "description": "Trend type - either add or drop"
-          },
-          "lookback_hours": {
-            "type": "number",
-            "description": "Number of hours to look back",
-            "default": 24,
-            "minimum": 1
-          },
-          "limit": {
-            "type": "number",
-            "description": "Number of results to return",
-            "default": 25,
-            "minimum": 1,
-            "maximum": 100
-          }
-        },
-        "required": ["type"]
       }
     }
   ]
