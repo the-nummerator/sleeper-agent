@@ -29,6 +29,8 @@ import { randomUUID } from "node:crypto";
 // ============================================================================
 
 import sleeper_mcp_json_def from "./files/sleeper_tools_def.json";
+import sleeper_players_json_def from "./files/sleeper_players_def.json";
+
 import {
   GetLeagueSchema,
   GetLeagueRostersSchema,
@@ -260,7 +262,7 @@ export class SleeperMCPServer {
             };
           }
 
-                    // User Tools
+          // User Tools
           case "get_user_by_id": {
             const params = GetUserByIdSchema.parse(args);
             const data = await this.makeApiRequest(`/user/${params.user_id}`);
@@ -274,31 +276,22 @@ export class SleeperMCPServer {
           }
 
           // Player Tools
-          case "get_players": {
+          case "get_player": {
+            const params = GetPlayersSchema.parse(args);
+            const player = Object.values(sleeper_players_json_def).find(p => p.player_id === params.player_id);
+            if (!player) {
+              throw new McpError(
+                ErrorCode.InvalidParams,
+                `Player with ID ${params.player_id} not found`
+              );
+            }
+            return this.formatResponse(player);
+
+            /**** For the API, refactored to use local lookup though
             const params = GetPlayersSchema.parse(args);
             const data = await this.makeApiRequest(`/players/${params.sport}`);
             return this.formatResponse(data);
-          }
-
-          case "get_trending_players": {
-            const params = GetTrendingPlayersSchema.parse(args);
-            let endpoint = `/players/${params.sport}/trending/${params.type}`;
-            
-            // Add query parameters
-            const queryParams = new URLSearchParams();
-            if (params.lookback_hours !== 24) {
-              queryParams.append('lookback_hours', params.lookback_hours.toString());
-            }
-            if (params.limit !== 25) {
-              queryParams.append('limit', params.limit.toString());
-            }
-            
-            if (queryParams.toString()) {
-              endpoint += `?${queryParams.toString()}`;
-            }
-            
-            const data = await this.makeApiRequest(endpoint);
-            return this.formatResponse(data);
+            */
           }
 
           default:

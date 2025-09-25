@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { pl } from "zod/v4/locales";
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -53,7 +54,7 @@ export const GetUserByUsernameSchema = z.object({
 
 // Player tool schemas
 export const GetPlayersSchema = z.object({
-  sport: z.enum(["nfl"]).default("nfl").describe("Sport type (currently only nfl supported)"),
+  player_id: z.string().describe("Unique identifier for the player"),
 });
 
 export const GetTrendingPlayersSchema = z.object({
