@@ -6,6 +6,7 @@
  */
 
 import { McpPromptArguments, McpGeneratedPrompt } from "../types";
+import { weeklySummaryPrompt } from "./prompts/weekly_summary_prompt";
 
 // ============================================================================
 // PROMPT DEFINITIONS
@@ -46,29 +47,9 @@ const PROMPT_LIST = [
     ]
   },
   {
-    name: "tuesday_summary",
-    description: "Generate a summary of the previous week's games with comical roasts",
-    arguments: [
-      {
-        name: "league_id",
-        description: "The league ID to summarize",
-        required: true,
-        schema: {
-          type: "string",
-          enum: ['1255621170552655872']
-        }
-      },
-      {
-        name: "summary_type",
-        description: "Type of summary to generate, with options",
-        required: true,
-        schema: {
-          type: "string",
-          enum: ['regular_summary'],
-        }
-        
-      },
-    ]
+    name: "weekly_summary",
+    description: "Generate a summary of the previous week's games and current standings",
+    arguments: []
   }
 ];
 
@@ -147,7 +128,7 @@ function generateFantasyAnalyzerPrompt(args: McpPromptArguments): string {
 }
 
 /**
- * Generate a prompt for fantasy football analysis
+ * Generate a prompt for fantasy football analysis (legacy tuesday_summary)
  */
 function generateTuesdaySummaryPrompt(args: McpPromptArguments): string {
   const { league_id, summary_type, week } = args;
@@ -193,7 +174,14 @@ function generateTuesdaySummaryPrompt(args: McpPromptArguments): string {
 
         Use the available Sleeper MCP tools to gather relevant league data.`;
   }
+}
 
+/**
+ * Generate a comprehensive weekly summary prompt
+ */
+function generateWeeklySummaryPrompt(args: McpPromptArguments): string {
+  const { } = args;
+  return weeklySummaryPrompt;
 }
 
 // ============================================================================
@@ -211,7 +199,7 @@ export function generatePrompt(promptName: string, args: McpPromptArguments = {}
     case "fantasy_analyzer":
       return generateFantasyAnalyzerPrompt(args);
     case "tuesday_summary":
-      return generateTuesdaySummaryPrompt(args);
+      return generateWeeklySummaryPrompt(args);
     
     default:
       throw new Error(`Unknown prompt: ${promptName}`);
