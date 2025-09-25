@@ -11,6 +11,8 @@ import apiRoutes from './routes/api';
 import { SleeperMCPServer } from './MCP/Sleeper/sleeper_mcp';
 import { isMcpStartedByClaude } from './MCP';
 
+
+process.title = 'sleeper-agent';
 dotenv.config();
 
 // Start the application

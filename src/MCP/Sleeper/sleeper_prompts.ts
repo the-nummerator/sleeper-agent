@@ -128,55 +128,6 @@ function generateFantasyAnalyzerPrompt(args: McpPromptArguments): string {
 }
 
 /**
- * Generate a prompt for fantasy football analysis (legacy tuesday_summary)
- */
-function generateTuesdaySummaryPrompt(args: McpPromptArguments): string {
-  const { league_id, summary_type, week } = args;
-  
-  let basePrompt = `You are a fantasy football expert analyzing Sleeper league data for league ${league_id}. 
-                    You are also a sports writer with a deep understanding of football dynamics who has 
-                    a comical lean to roast players and league teams.
-                    Before you generate any text, calculate the margin of victory between all matches.`;
-  
-  switch (summary_type) {
-    case "regular_summary":
-      return `${basePrompt}
-
-        Calculate the margins of victories for all matches before you answer. Once calculated, please provide a summary 
-        of the previous week's matches including:
-
-        1. Brief written account of three teams: King of the Week (the team with the highest score), 
-            the Weekly Lamb (the team with the lowest score), the Biggest Blowout (the match with 
-            the largest margin of victory), and the Close but No Cigar (the losing team of the match 
-            with the lowest margin of victory). Annotate these with burns and 
-            jabs at the teams involved.
-
-        2. A summary of all matchups and their outcomes. Include a table of each match - one row per match. 
-            For each match include a column for each team, each team's respective score, the winner marked 
-            with a football emoji, the margin of victory and a one sentence summary of the matchup.
-
-        3. A list of standings - validate you have the right record with the league API. Briefly 
-            summarize playoff implications based on the standings.
-
-        Use the available Sleeper MCP tools to gather relevant league data. Validate your math. 
-        Always look up users in the league and use team_name for rosters and team references. 
-        When summarizing player actions for a given team, make sure that player is actual 
-        on that team's roster.`;
-
-      default:
-              return `${basePrompt}
-
-        Please provide a general analysis of this fantasy football league including:
-        1. Current standings and team performance
-        2. Notable roster constructions and strategies  
-        3. Recent transaction activity
-        4. League competitiveness and engagement
-
-        Use the available Sleeper MCP tools to gather relevant league data.`;
-  }
-}
-
-/**
  * Generate a comprehensive weekly summary prompt
  */
 function generateWeeklySummaryPrompt(args: McpPromptArguments): string {
