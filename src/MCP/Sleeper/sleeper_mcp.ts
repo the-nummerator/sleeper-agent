@@ -202,7 +202,46 @@ export class SleeperMCPServer {
           case "get_league_rosters": {
             const params = GetLeagueRostersSchema.parse(args);
             const data = await this.makeApiRequest(`/league/${params.league_id}/rosters`);
-            return this.formatResponse(data);
+            
+            // Helper function to get player name from ID
+            const getPlayerName = (playerId: string): string => {
+              const player = (sleeper_players_json_def as any)[playerId];
+              if (player && player.full_name) {
+                return player.full_name;
+              }
+              // Return the ID if it's a defense/special teams (e.g., "CLE") or unknown player
+              return playerId;
+            };
+
+            // Transform the roster data to replace player IDs with names
+            const transformedData = data.map((roster: any) => {
+              const transformed: any = { ...roster };
+              
+              // Transform players array (player IDs to names)
+              if (transformed.players) {
+                transformed.players = transformed.players.map((playerId: string) => 
+                  getPlayerName(playerId)
+                );
+              }
+              
+              // Transform starters array (player IDs to names)
+              if (transformed.starters) {
+                transformed.starters = transformed.starters.map((playerId: string) => 
+                  getPlayerName(playerId)
+                );
+              }
+              
+              // Transform keepers array (player IDs to names) if present
+              if (transformed.keepers) {
+                transformed.keepers = transformed.keepers.map((playerId: string) => 
+                  getPlayerName(playerId)
+                );
+              }
+              
+              return transformed;
+            });
+            
+            return this.formatResponse(transformedData);
           }
 
           case "get_league_users": {
@@ -216,7 +255,64 @@ export class SleeperMCPServer {
             const data = await this.makeApiRequest(
               `/league/${params.league_id}/matchups/${params.week}`
             );
-            return this.formatResponse(data);
+            
+            // Helper function to get player name from ID
+            const getPlayerName = (playerId: string): string => {
+              const player = (sleeper_players_json_def as any)[playerId];
+              if (player && player.full_name) {
+                return player.full_name;
+              }
+              // Return the ID if it's a defense/special teams (e.g., "CLE") or unknown player
+              return playerId;
+            };
+
+            // Transform the matchup data to replace player IDs with names
+            const transformedData = data.map((matchup: any) => {
+              const transformed: any = { ...matchup };
+              
+              // Keep original starters array for reference
+              const originalStarters = transformed.starters ? [...transformed.starters] : [];
+              
+              // Transform starters array (player IDs to names)
+              if (transformed.starters) {
+                transformed.starters = transformed.starters.map((playerId: string) => 
+                  getPlayerName(playerId)
+                );
+              }
+              
+              // Transform players array (player IDs to names)
+              if (transformed.players) {
+                transformed.players = transformed.players.map((playerId: string) => 
+                  getPlayerName(playerId)
+                );
+              }
+              
+              // Transform starters_points array (parallel array to starters, map to player names)
+              if (transformed.starters_points && originalStarters.length > 0) {
+                // Create new array with player names paired with their points
+                const startersWithPoints: any = {};
+                originalStarters.forEach((playerId: string, index: number) => {
+                  const playerName = getPlayerName(playerId);
+                  const points = transformed.starters_points[index] || 0;
+                  startersWithPoints[playerName] = points;
+                });
+                transformed.starters_points = startersWithPoints;
+              }
+              
+              // Transform players_points object (player IDs as keys to names)
+              if (transformed.players_points) {
+                const newPlayersPoints: any = {};
+                for (const [playerId, points] of Object.entries(transformed.players_points)) {
+                  const playerName = getPlayerName(playerId);
+                  newPlayersPoints[playerName] = points;
+                }
+                transformed.players_points = newPlayersPoints;
+              }
+              
+              return transformed;
+            });
+            
+            return this.formatResponse(transformedData);
           }
 
           case "get_playoff_bracket": {
