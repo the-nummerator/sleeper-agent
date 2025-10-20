@@ -90,7 +90,7 @@
     },
     {
       "name": "get_league_rosters",
-      "description": "Get all rosters in a league with player lists and settings",
+      "description": "Get all rosters in a league including players, starters, and team performance. Returns an array of roster objects with each team's complete player list (player IDs), starting lineup, wins/losses, and owner information. Use this to analyze team composition, roster depth, and season performance.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -118,7 +118,7 @@
     },
     {
       "name": "get_league_matchups",
-      "description": "Get all matchups for a specific week in a league",
+      "description": "Get all matchups for a specific week including scores, starters, and head-to-head pairings. Returns an array where each object is one team's performance in their matchup. Teams facing each other share the same matchup_id. Use this to analyze weekly results, calculate margins of victory, identify highest/lowest scoring teams, and track which players were started.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -128,7 +128,7 @@
           },
           "week": {
             "type": "number",
-            "description": "Week number (1-18)",
+            "description": "Week number (1-18 for NFL regular season + playoffs)",
             "minimum": 1,
             "maximum": 18
           }
