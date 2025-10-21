@@ -1,7 +1,5 @@
 import { BaseMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ChatAnthropic } from "@langchain/anthropic";
-import * as dotenv from "dotenv";
-dotenv.config();
 
 export interface AgentPerception {
   input: string;
@@ -35,6 +33,7 @@ export abstract class BaseAgent {
 
   constructor(config: AnthropicConfig = {}) {
     const apiKey = config.apiKey || process.env.ANTHROPIC_API_KEY;
+    
     if (!apiKey) {
       throw new Error("Anthropic API key is required. " +
         "Set ANTHROPIC_API_KEY environment variable or pass apiKey in config.");
@@ -42,7 +41,7 @@ export abstract class BaseAgent {
 
     this.llm = new ChatAnthropic({
       apiKey,
-      model: config.model || "claude-3-sonnet-20240229",
+      model: config.model || "claude-sonnet-4-5-20250929",
       temperature: config.temperature || 0.7,
       maxTokens: config.maxTokens || 4096,
     });

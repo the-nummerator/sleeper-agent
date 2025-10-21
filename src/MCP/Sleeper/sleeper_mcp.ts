@@ -7,7 +7,6 @@
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
@@ -82,7 +81,7 @@ export class SleeperMCPServer {
   private server: Server;
   private config: SleeperApiConfig;
   private lastRequestTime: number = 0;
-  private transport?: StreamableHTTPServerTransport;
+  // todo delete private transport?: StreamableHTTPServerTransport;
 
   constructor(config?: Partial<SleeperApiConfig>) {
     this.config = {
@@ -503,44 +502,24 @@ export class SleeperMCPServer {
   }
 
   /**
-   * Initialize the MCP server (without starting HTTP transport)
+   * Initialize the MCP server (setup handlers only)
    */
-  async initialize(port: string): Promise<void> {
-    // Create transport but don't start it yet - it will be started when handling HTTP requests
-    this.transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
-      onsessioninitialized: (sessionId) => {
-        console.log(`MCP session initialized: ${sessionId}`);
-      },
-      onsessionclosed: (sessionId) => {
-        console.log(`MCP session closed: ${sessionId}`);
-      },
-      enableJsonResponse: false, // Use SSE for streaming
-      allowedHosts: ['localhost', '127.0.0.1'],
-      allowedOrigins: ['http://localhost:' + port, 'http://127.0.0.1:' + port],
-      enableDnsRebindingProtection: false
-    });
-
-    await this.server.connect(this.transport);
-    console.log("Sleeper MCP server initialized with HTTP transport");
+  async initializeServer(): Promise<void> {
+    console.log("Sleeper MCP server handlers initialized");
   }
 
   /**
-   * Handle HTTP requests for MCP communication
+   * Get the server instance for SSE transport connection
    */
-  async handleRequest(req: IncomingMessage, res: ServerResponse, parsedBody?: unknown): Promise<void> {
-    if (!this.transport) {
-      throw new Error("MCP server not initialized. Call initialize() first.");
-    }
-    
-    await this.transport.handleRequest(req, res, parsedBody);
+  getServer(): Server {
+    return this.server;
   }
 
   /**
-   * Get the transport instance (for direct access if needed)
+   * Get available tools for direct access
    */
-  getTransport(): StreamableHTTPServerTransport | undefined {
-    return this.transport;
+  async getAvailableTools() {
+    return sleeper_mcp_json_def.tools;
   }
 
   /* In case you want to use stdio instead of HTTP */

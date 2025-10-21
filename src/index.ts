@@ -3,17 +3,38 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 import apiRoutes from './routes/api';
+import sleeperAgentRoutes from './routes/sleeperAgent';
+import mcpRoutes from './routes/mcp';
 
 import { SleeperMCPServer } from './MCP/Sleeper/sleeper_mcp';
-import { isMcpStartedByClaude } from './MCP';
+import { isMcpStartedByClaude as claudeDesktopSpawnChecker } from './MCP';
 
 
 process.title = 'sleeper-agent';
-dotenv.config();
+
+// Load environment variables from vars.env in the root directory
+const varsEnvPath = path.join(process.cwd(), 'vars.env');
+console.log('Looking for vars.env at:', varsEnvPath);
+console.log('vars.env exists:', fs.existsSync(varsEnvPath));
+
+if (fs.existsSync(varsEnvPath)) {
+  const result = dotenv.config({ path: varsEnvPath });
+  if (result.error) {
+    console.error('Error loading vars.env:', result.error);
+  } else {
+    console.log('Successfully loaded vars.env');
+    console.log('Loaded variables:', Object.keys(result.parsed || {}));
+  }
+} else {
+  console.log('vars.env not found, trying default .env');
+  dotenv.config(); // Fallback to default .env
+}
 
 // Start the application
 
@@ -30,7 +51,7 @@ Initialize and Start Application
 
 async function startHttpApplication(): Promise<express.Express | void> {
 
-  if (await isMcpStartedByClaude()) {
+  if (await claudeDesktopSpawnChecker()) {
 
     console.error('MCP is started by Claude');
     try {
@@ -62,37 +83,11 @@ async function startHttpApplication(): Promise<express.Express | void> {
     });
 
     app.use('/api', apiRoutes);
+    app.use('/agent', sleeperAgentRoutes);
+    app.use('/mcp', mcpRoutes);
 
     app.use(notFound);
     app.use(errorHandler);
-
-    /*******
-    Initialize MCP Server
-    ********/
-    const SLEEPER_MCP_PORT: string = process.env.SLEEPER_MCP_PORT || '3001';
-
-    let mcpServer: SleeperMCPServer;
-
-    try {
-      const mcpServer = new SleeperMCPServer();
-      await mcpServer.initialize(SLEEPER_MCP_PORT);
-
-      // MCP routes
-      app.all('/mcp', async (req, res) => {
-      try {
-        await mcpServer.handleRequest(req, res, req.body);
-      } catch (error) {
-        console.error('MCP request error:', error);
-        if (!res.headersSent) {
-          res.status(500).json({ error: 'Internal server error' });
-        }
-      }
-    });
-    } catch (error) {
-      console.error("Failed to initialize MCP server:", error);
-    }
-
-    
 
     /******
      * start the server
@@ -102,6 +97,8 @@ async function startHttpApplication(): Promise<express.Express | void> {
       console.log(`🚀 Server running on port ${ROUTER_PORT}`);
       console.log(`📊 Health check: http://localhost:${ROUTER_PORT}/health`);
       console.log(`🔌 MCP endpoint: http://localhost:${ROUTER_PORT}/mcp`);
+      console.log(`🔧 MCP status: http://localhost:${ROUTER_PORT}/mcp/status`);
+      console.log(`🤖 SleeperAgent endpoints: http://localhost:${ROUTER_PORT}/agent`);
     }).on('error', (err: any) => {
         if (err.code === 'EADDRINUSE') {
             console.error(`Port ${ROUTER_PORT} is busy`);

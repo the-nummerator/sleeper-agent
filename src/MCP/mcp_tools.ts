@@ -15,8 +15,7 @@ export async function isMcpStartedByClaude() {
             console.error('Parent process info:');
             
             // Check if parent contains Claude-related terms
-            return stdout.toLowerCase().includes('claude') || 
-                   stdout.toLowerCase().includes('anthropic') ||
+            return stdout.includes('Claude') || 
                    stdout.toLowerCase().includes('claude-desktop');
         }
         
